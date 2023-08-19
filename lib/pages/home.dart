@@ -36,20 +36,24 @@ class _HomePageState extends State<HomePage> {
         child: Card(
             child: Column(
               children: [
+                const Spacer(),
                 const Text("Image here..."),
+                const Spacer(),
                 Row(
                   children: [
                     Text(pet.name),
-                    pet.sex.icon
+                    const Spacer(),
+                    pet.sex.icon,
+                    const Spacer(),
+                    IconButton(
+                      icon: const Icon(Icons.delete),
+                      color: Colors.red,
+                      onPressed: () {
+                        Provider.of<PetsModel>(context, listen: false).remove(pet);
+                      },
+                    )
                   ],
                 ),
-                IconButton(
-                  icon: const Icon(Icons.delete),
-                  color: Colors.red,
-                  onPressed: () {
-                    Provider.of<PetsModel>(context, listen: false).remove(pet);
-                  },
-                )
               ],
             )
         ),

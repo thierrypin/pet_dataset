@@ -1,6 +1,6 @@
 # pet_dataset
 
-Pet Dataset
+A new Flutter project.
 
 ## Getting Started
 
