@@ -1,7 +1,8 @@
-import 'package:flutter/material.dart';
-import 'package:pet_dataset/model.dart';
-import 'package:provider/provider.dart';
+import 'dart:io';
 
+import 'package:flutter/material.dart';
+import 'package:pet_dataset/model/model.dart';
+import 'package:provider/provider.dart';
 
 // ********************************************************
 // New Pet
@@ -11,7 +12,6 @@ class NewPetPage extends StatefulWidget {
 
   @override
   State<NewPetPage> createState() => _NewPetPageState();
-
 }
 
 class _NewPetPageState extends State<NewPetPage> {
@@ -33,30 +33,28 @@ class _NewPetPageState extends State<NewPetPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-          title: const Text("Novo Pet"),
-        ),
-        body: Form(
+      appBar: AppBar(
+        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        title: const Text("Novo Pet"),
+      ),
+      body: Form(
           key: _formKey,
           child: Column(
             children: [
               // *************
               // Nome
               TextFormField(
-                controller: nameController,
-                decoration: const InputDecoration(
-                  hintText: "O nome do bichinho",
-                  labelText: "Nome",
-                  icon: Icon(Icons.abc)
-                ),
-                validator: (String? value) {
-                  if (value == null || value.isEmpty) {
-                    return "O nome não pode ficar vazio";
-                  }
-                  return null;
-                }
-              ),
+                  controller: nameController,
+                  decoration: const InputDecoration(
+                      hintText: "O nome do bichinho",
+                      labelText: "Nome",
+                      icon: Icon(Icons.abc)),
+                  validator: (String? value) {
+                    if (value == null || value.isEmpty) {
+                      return "O nome não pode ficar vazio";
+                    }
+                    return null;
+                  }),
 
               // *************
               // Espécie
@@ -110,14 +108,11 @@ class _NewPetPageState extends State<NewPetPage> {
               // Nome
               TextFormField(
                 controller: breedController,
-                  decoration: const InputDecoration(
-                      labelText: "Raça",
-                      icon: Icon(Icons.abc)
-                  ),
+                decoration: const InputDecoration(
+                    labelText: "Raça", icon: Icon(Icons.abc)),
               ),
             ],
-          )
-        ),
+          )),
       floatingActionButton: FloatingActionButton.extended(
         tooltip: 'Increment',
         icon: const Icon(Icons.save),
@@ -130,8 +125,7 @@ class _NewPetPageState extends State<NewPetPage> {
             Provider.of<PetsModel>(context, listen: false).add(new_pet);
 
             ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text("Pet salvo com sucesso"))
-            );
+                const SnackBar(content: Text("Pet salvo com sucesso")));
             Navigator.pop(context);
           }
         },
@@ -139,7 +133,6 @@ class _NewPetPageState extends State<NewPetPage> {
     );
   }
 }
-
 
 // ********************************************************
 // View Pet
@@ -154,41 +147,116 @@ class ViewPetPage extends StatefulWidget {
 }
 
 class _ViewPetPageState extends State<ViewPetPage> {
+  Widget getDeleteButton() {
+    return FloatingActionButton(
+      tooltip: 'Increment',
+      backgroundColor: Colors.red,
+      foregroundColor: Colors.white,
+      child: const Icon(Icons.delete),
+      onPressed: () {
+        Provider.of<PetsModel>(context, listen: false).remove(widget.pet);
+
+        ScaffoldMessenger.of(context)
+            .showSnackBar(const SnackBar(content: Text("Pet deletado")));
+        Navigator.pop(context);
+      },
+    );
+  }
+
+  Widget makeDescription() {
+    return Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          children: [
+            // Name
+            Row(
+              children: [
+                Text(
+                  widget.pet.name,
+                  style: Theme.of(context).textTheme.displayMedium,
+                )
+              ],
+            ),
+            // Species
+            Row(
+              children: [
+                Text(widget.pet.species.name,
+                    style: Theme.of(context).textTheme.displaySmall)
+              ],
+            ),
+            // Sex
+            Row(
+              children: [
+                Text(widget.pet.sex.name,
+                    style: Theme.of(context).textTheme.displaySmall)
+              ],
+            ),
+          ],
+        ));
+  }
+
+  Widget buildPhotoTile(int index) {
+    return GridTile(
+        child: GestureDetector(
+      onTap: () {
+        // Mostrar imagem como um popup
+      },
+      child: Container(
+        decoration: BoxDecoration(
+            image: DecorationImage(
+                image: FileImage(File(widget.pet.photos[index].getThumbnail())),
+                fit: BoxFit.cover)),
+      ),
+    ));
+  }
+
+  Widget makeGalleryContent() {
+    if (widget.pet.photos.isEmpty) {
+      return const Center(child: Text("Este pet ainda não possui fotos"));
+    } else {
+      return Consumer<PetsModel>(builder: (context, petsModel, child) {
+        return GridView(
+            gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                maxCrossAxisExtent: 200,
+                childAspectRatio: 3 / 2,
+                crossAxisSpacing: 20,
+                mainAxisSpacing: 20),
+            children:
+            List<Widget>.generate(widget.pet.photos.length, (int index) {
+              return buildPhotoTile(index);
+            }));
+      });
+    }
+  }
+
+  Widget makeGallery() {
+    return Expanded(child: Container(
+      padding: const EdgeInsets.all(24.0),
+      color: Theme.of(context).colorScheme.background,
+      child: Expanded(child: makeGalleryContent())
+    ));
+  }
+
+  Widget makeOptionsRow() {
+    return Text("Options Row");
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: Text(widget.pet.name),
-      ),
-      body: Center(
-          child: Column(
-            children: [
-              Text("Nome: ${widget.pet.name}"),
-              Text(widget.pet.species.name),
-              Text(widget.pet.sex.name),
-            ],
-          )
-      ),
-      floatingActionButton: FloatingActionButton(
-        tooltip: 'Increment',
-        backgroundColor: Colors.red,
-        foregroundColor: Colors.white,
-        child: const Icon(Icons.delete),
-        onPressed: () {
-          Provider.of<PetsModel>(context, listen: false).remove(widget.pet);
-
-          ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text("Pet deletado"))
-          );
-          Navigator.pop(context);
-        },
-      ),
-    );
+        appBar: AppBar(
+          backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+          title: Text(widget.pet.name),
+        ),
+        body: Align(
+            alignment: Alignment.topLeft,
+            child: Column(
+              children: [
+                makeDescription(),
+                makeGallery(),
+                makeOptionsRow()
+              ],
+            )),
+        floatingActionButton: getDeleteButton());
   }
 }
-
-
-
-

@@ -1,10 +1,8 @@
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import 'package:pet_dataset/model.dart';
+import 'package:pet_dataset/model/model.dart';
 import 'package:pet_dataset/pages/pet_pages.dart';
-
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key, required this.title});
@@ -28,55 +26,47 @@ class _HomePageState extends State<HomePage> {
   Widget _petToCard(Pet pet) {
     return GestureDetector(
       onTap: () {
-        Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => ViewPetPage(pet: pet))
-        );
+        Navigator.push(context,
+            MaterialPageRoute(builder: (context) => ViewPetPage(pet: pet)));
       },
-        child: Card(
-            child: Column(
+      child: Card(
+          child: Column(
+          children: [
+            const Spacer(),
+            const Text("Image here..."),
+            const Spacer(),
+            Row(
               children: [
+                Text(pet.name),
                 const Spacer(),
-                const Text("Image here..."),
+                pet.sex.icon,
                 const Spacer(),
-                Row(
-                  children: [
-                    Text(pet.name),
-                    const Spacer(),
-                    pet.sex.icon,
-                    const Spacer(),
-                    IconButton(
-                      icon: const Icon(Icons.delete),
-                      color: Colors.red,
-                      onPressed: () {
-                        Provider.of<PetsModel>(context, listen: false).remove(pet);
-                      },
-                    )
-                  ],
-                ),
-              ],
-            )
-        ),
+                IconButton(
+                  icon: const Icon(Icons.delete),
+                  color: Colors.red,
+                  onPressed: () {
+                    Provider.of<PetsModel>(context, listen: false).remove(pet);
+                  },
+                )
+            ],
+          ),
+        ],
+      )),
     );
   }
 
   Widget _getPetCards() {
-    return Consumer<PetsModel>(
-        builder: (context, petsModel, child) {
-          return GridView(
-            gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-            maxCrossAxisExtent: 200,
-            childAspectRatio: 3 / 2,
-            crossAxisSpacing: 20,
-            mainAxisSpacing: 20),
-            children: List<Widget>.generate(
-                petsModel.pets.length, (int index) {
-                return _petToCard(petsModel.pets[index]);
-              }
-            )
-          );
-        }
-    );
+    return Consumer<PetsModel>(builder: (context, petsModel, child) {
+      return GridView(
+          gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+              maxCrossAxisExtent: 200,
+              childAspectRatio: 3 / 2,
+              crossAxisSpacing: 20,
+              mainAxisSpacing: 20),
+          children: List<Widget>.generate(petsModel.pets.length, (int index) {
+            return _petToCard(petsModel.pets[index]);
+          }));
+    });
   }
 
   @override
@@ -86,18 +76,14 @@ class _HomePageState extends State<HomePage> {
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text(widget.title),
       ),
-      body: Center(
-        child: _getPetCards()
-      ),
+      body: Center(child: _getPetCards()),
       floatingActionButton: FloatingActionButton.extended(
         tooltip: 'Increment',
         icon: const Icon(Icons.add),
         label: const Text("Adicionar Pet"),
         onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const NewPetPage())
-          );
+          Navigator.push(context,
+              MaterialPageRoute(builder: (context) => const NewPetPage()));
         },
       ), // This trailing comma makes auto-formatting nicer for build methods.
     );
