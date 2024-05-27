@@ -2,6 +2,7 @@
 import 'dart:collection';
 
 import 'package:flutter/material.dart';
+import 'package:pet_dataset/model/persistence.dart';
 
 enum Species { none, cat, dog }
 extension SpeciesExtension on Species {
@@ -53,12 +54,29 @@ extension SexExtension on Sex {
   }
 }
 
-
 class Breed {
-  String name;
+  late String name;
   String? desc;
 
   Breed(this.name);
+  Breed.fromJson(Map<String, dynamic> json) {
+    name = json['name'];
+    if (json.containsKey('desc')) {
+      desc = json['desc'];
+    }
+  }
+
+  Map<String, dynamic> toJson() {
+    Map<String, dynamic> out = {
+      'name': name
+    };
+
+    if (desc != null) {
+      out['desc'] = desc;
+    }
+
+    return out;
+  }
 }
 
 class Photo {
@@ -99,7 +117,6 @@ class Pet {
 
   Pet.fromJson(Map<String, dynamic> json) {
     name = json['name'];
-    breed = json['breed'];
     species = Species.values.byName(json['species']);
     sex = Sex.values.byName(json['sex']);
 
@@ -107,7 +124,10 @@ class Pet {
     photos = json['photos'].map((Map<String, dynamic> e) {
       return Photo.fromJson(e);
     });
-
+    
+    if (json.containsKey('breed')) {
+      breed = Breed.fromJson(json['breed']);
+    }
     if (json.containsKey('localId')) {
       localId = json['localId'];
     }
@@ -121,12 +141,14 @@ class Pet {
 
     Map<String, dynamic> out = {
       'name': name,
-      'breed': breed,
       'species': species.name,
       'sex': sex.name,
       'photos': photosJson,
     };
 
+    if (breed != null) {
+      out['breed'] = breed!.toJson();
+    }
     if (localId != null) {
       out['localId'] = localId;
     }
@@ -156,14 +178,21 @@ class PetsModel extends ChangeNotifier {
   // View
   UnmodifiableListView<Pet> get items => UnmodifiableListView(pets);
 
+  void initPets(List<Pet> pets) {
+    this.pets.addAll(pets);
+    notifyListeners();
+  }
+
   void add(Pet pet) {
     pets.add(pet);
     notifyListeners();
+    savePet(pet);
   }
 
   void remove(Pet pet) {
     pets.remove(pet);
     notifyListeners();
+    deletePet(pet);
   }
 
 }

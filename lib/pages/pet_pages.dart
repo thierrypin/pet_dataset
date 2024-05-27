@@ -20,7 +20,9 @@ class _NewPetPageState extends State<NewPetPage> {
   final nameController = TextEditingController();
   final breedController = TextEditingController();
 
-  Pet new_pet = Pet.empty();
+  Pet newPet = Pet.empty();
+  String speciesErrorMessage = "";
+  String sexErrorMessage = "";
 
   @override
   void dispose() {
@@ -28,6 +30,34 @@ class _NewPetPageState extends State<NewPetPage> {
     nameController.dispose();
     breedController.dispose();
     super.dispose();
+  }
+
+  bool _validateSpecies() {
+    if (newPet.species == Species.none) {
+      setState(() {
+        speciesErrorMessage = "É gato ou cachorro?";
+      });
+      return false;
+    } else {
+      setState(() {
+        speciesErrorMessage = "";
+      });
+      return true;
+    }
+  }
+
+  bool _validateSex() {
+    if (newPet.sex == Sex.none) {
+      setState(() {
+        sexErrorMessage = "Insira o sexo do bichinho";
+      });
+      return false;
+    } else {
+      setState(() {
+        sexErrorMessage = "";
+      });
+      return true;
+    }
   }
 
   @override
@@ -42,7 +72,7 @@ class _NewPetPageState extends State<NewPetPage> {
           child: Column(
             children: [
               // *************
-              // Nome
+              // Name
               TextFormField(
                   controller: nameController,
                   decoration: const InputDecoration(
@@ -57,55 +87,57 @@ class _NewPetPageState extends State<NewPetPage> {
                   }),
 
               // *************
-              // Espécie
-              Text("Espécie"),
+              // Species
+              const Text("Espécie"),
               RadioListTile<Species>(
                 title: const Text("Cachorro"),
                 value: Species.dog,
-                groupValue: new_pet.species,
+                groupValue: newPet.species,
                 onChanged: (Species? value) {
                   setState(() {
-                    new_pet.species = value!;
+                    newPet.species = value!;
                   });
                 },
               ),
               RadioListTile<Species>(
                 title: const Text("Gato"),
                 value: Species.cat,
-                groupValue: new_pet.species,
+                groupValue: newPet.species,
                 onChanged: (Species? value) {
                   setState(() {
-                    new_pet.species = value!;
+                    newPet.species = value!;
                   });
                 },
               ),
+              Text(speciesErrorMessage, style: const TextStyle(color: Colors.red)),
 
               // *************
-              // Sexo
-              Text("Sexo"),
+              // Sex
+              const Text("Sexo"),
               RadioListTile<Sex>(
                 title: const Text("Macho"),
                 value: Sex.masc,
-                groupValue: new_pet.sex,
+                groupValue: newPet.sex,
                 onChanged: (Sex? value) {
                   setState(() {
-                    new_pet.sex = value!;
+                    newPet.sex = value!;
                   });
                 },
               ),
               RadioListTile<Sex>(
                 title: const Text("Fêmea"),
                 value: Sex.fem,
-                groupValue: new_pet.sex,
+                groupValue: newPet.sex,
                 onChanged: (Sex? value) {
                   setState(() {
-                    new_pet.sex = value!;
+                    newPet.sex = value!;
                   });
                 },
               ),
+              Text(sexErrorMessage, style: const TextStyle(color: Colors.red)),
 
               // *************
-              // Nome
+              // Breed
               TextFormField(
                 controller: breedController,
                 decoration: const InputDecoration(
@@ -114,15 +146,15 @@ class _NewPetPageState extends State<NewPetPage> {
             ],
           )),
       floatingActionButton: FloatingActionButton.extended(
-        tooltip: 'Increment',
+        tooltip: 'Salvar',
         icon: const Icon(Icons.save),
         label: const Text("Salvar"),
         onPressed: () {
-          if (_formKey.currentState!.validate()) {
-            new_pet.name = nameController.text;
-            String breed_name = breedController.text;
-            new_pet.breed = Breed(breed_name);
-            Provider.of<PetsModel>(context, listen: false).add(new_pet);
+          if (_formKey.currentState!.validate() && _validateSpecies() && _validateSex()) {
+            newPet.name = nameController.text;
+            String breedName = breedController.text;
+            newPet.breed = Breed(breedName);
+            Provider.of<PetsModel>(context, listen: false).add(newPet);
 
             ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text("Pet salvo com sucesso")));
@@ -181,14 +213,22 @@ class _ViewPetPageState extends State<ViewPetPage> {
             Row(
               children: [
                 Text(widget.pet.species.name,
-                    style: Theme.of(context).textTheme.displaySmall)
+                    style: Theme.of(context).textTheme.bodyLarge)
               ],
             ),
             // Sex
             Row(
               children: [
+                // const Icon(Icons.fema),
                 Text(widget.pet.sex.name,
-                    style: Theme.of(context).textTheme.displaySmall)
+                    style: Theme.of(context).textTheme.bodyLarge)
+              ],
+            ),
+            // Breed
+            Row(
+              children: [
+                Text("Raça: ${widget.pet.breed!.name}",
+                    style: Theme.of(context).textTheme.bodyLarge)
               ],
             ),
           ],
@@ -231,14 +271,14 @@ class _ViewPetPageState extends State<ViewPetPage> {
 
   Widget makeGallery() {
     return Expanded(child: Container(
-      padding: const EdgeInsets.all(24.0),
+      // padding: const EdgeInsets.all(24.0),
       color: Theme.of(context).colorScheme.background,
-      child: Expanded(child: makeGalleryContent())
+      child: makeGalleryContent()
     ));
   }
 
   Widget makeOptionsRow() {
-    return Text("Options Row");
+    return const Text("Options Row");
   }
 
   @override

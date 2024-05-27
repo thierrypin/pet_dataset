@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pet_dataset/model/persistence.dart';
 import 'package:provider/provider.dart';
 
 import 'package:pet_dataset/model/model.dart';
@@ -19,6 +20,9 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+    Future<List<Pet>> ret = loadPets();
+    ret.then((pets) => Provider.of<PetsModel>(context, listen: false).initPets(pets));
+
     return MaterialApp(
       title: 'Pet Dataset',
       theme: ThemeData(

@@ -48,13 +48,14 @@ void updatePet(Pet pet) async {
 
 void deletePet(Pet pet) async {
   Directory basepath = await getApplicationDocumentsDirectory();
+  print(basepath);
   Directory directory = Directory(join(basepath.path, pet.localId.toString().padLeft(6, '0')));
   await directory.delete(recursive: true);
 }
 
 Future<List<Pet>> loadPets() async {
   Directory directory = await getApplicationDocumentsDirectory();
-  List<Directory> petDirs = List<Directory>.empty();
+  List<Directory> petDirs = List<Directory>.empty(growable: true);
 
   for (FileSystemEntity e in directory.listSync()) {
     if (e is Directory) {
@@ -141,7 +142,7 @@ Tuple3<List<int>, num, num> getPhoto(dynamic f) {
 
   pimg.Image? image = pimg.decodeImage(file.readAsBytesSync());
 
-  return Tuple3<List<int>, num, num>(pimg.encodePng(image!), image!.width, image!.height);
+  return Tuple3<List<int>, num, num>(pimg.encodePng(image!), image.width, image.height);
 }
 
 Future<String> persistImage(Pet pet, File file) async {
