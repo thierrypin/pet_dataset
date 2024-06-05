@@ -1,14 +1,17 @@
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:pet_dataset/model/model.dart';
+import 'package:pet_dataset/pages/view_pet_pages.dart';
 import 'package:provider/provider.dart';
+
 
 // ********************************************************
 // New Pet
 // ********************************************************
 class NewPetPage extends StatefulWidget {
-  const NewPetPage({super.key});
+  const NewPetPage({super.key, this.pet});
+
+  final Pet? pet;
 
   @override
   State<NewPetPage> createState() => _NewPetPageState();
@@ -23,6 +26,19 @@ class _NewPetPageState extends State<NewPetPage> {
   Pet newPet = Pet.empty();
   String speciesErrorMessage = "";
   String sexErrorMessage = "";
+  bool isNew = true;
+
+  @override
+  void initState() {
+    super.initState();
+
+    if (widget.pet != null) {
+      newPet = widget.pet!;
+      isNew = false;
+      nameController.text = newPet.name;
+      breedController.text = newPet.breed?.name ?? "";
+    }
+  }
 
   @override
   void dispose() {
@@ -152,151 +168,26 @@ class _NewPetPageState extends State<NewPetPage> {
         onPressed: () {
           if (_formKey.currentState!.validate() && _validateSpecies() && _validateSex()) {
             newPet.name = nameController.text;
-            String breedName = breedController.text;
-            newPet.breed = Breed(breedName);
-            Provider.of<PetsModel>(context, listen: false).add(newPet);
+            newPet.breed = Breed(breedController.text);
 
-            ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text("Pet salvo com sucesso")));
-            Navigator.pop(context);
+            if (isNew) {
+              Provider.of<PetsModel>(context, listen: false).add(newPet);
+
+              ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text("Pet salvo com sucesso")));
+              Navigator.pop(context);
+              Navigator.push(context, MaterialPageRoute(builder: (context) => ViewPetPage(pet: newPet)));
+            } else {
+              Provider.of<PetsModel>(context, listen: false).update(widget.pet!, newPet);
+
+              ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text("Pet salvo com sucesso")));
+              Navigator.pop(context);
+              setState(() {});
+            }
           }
         },
       ),
     );
-  }
-}
-
-// ********************************************************
-// View Pet
-// ********************************************************
-class ViewPetPage extends StatefulWidget {
-  const ViewPetPage({super.key, required this.pet});
-
-  final Pet pet;
-
-  @override
-  State<ViewPetPage> createState() => _ViewPetPageState();
-}
-
-class _ViewPetPageState extends State<ViewPetPage> {
-  Widget getDeleteButton() {
-    return FloatingActionButton(
-      tooltip: 'Increment',
-      backgroundColor: Colors.red,
-      foregroundColor: Colors.white,
-      child: const Icon(Icons.delete),
-      onPressed: () {
-        Provider.of<PetsModel>(context, listen: false).remove(widget.pet);
-
-        ScaffoldMessenger.of(context)
-            .showSnackBar(const SnackBar(content: Text("Pet deletado")));
-        Navigator.pop(context);
-      },
-    );
-  }
-
-  Widget makeDescription() {
-    return Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          children: [
-            // Name
-            Row(
-              children: [
-                Text(
-                  widget.pet.name,
-                  style: Theme.of(context).textTheme.displayMedium,
-                )
-              ],
-            ),
-            // Species
-            Row(
-              children: [
-                Text(widget.pet.species.name,
-                    style: Theme.of(context).textTheme.bodyLarge)
-              ],
-            ),
-            // Sex
-            Row(
-              children: [
-                // const Icon(Icons.fema),
-                Text(widget.pet.sex.name,
-                    style: Theme.of(context).textTheme.bodyLarge)
-              ],
-            ),
-            // Breed
-            Row(
-              children: [
-                Text("Raça: ${widget.pet.breed!.name}",
-                    style: Theme.of(context).textTheme.bodyLarge)
-              ],
-            ),
-          ],
-        ));
-  }
-
-  Widget buildPhotoTile(int index) {
-    return GridTile(
-        child: GestureDetector(
-      onTap: () {
-        // Mostrar imagem como um popup
-      },
-      child: Container(
-        decoration: BoxDecoration(
-            image: DecorationImage(
-                image: FileImage(File(widget.pet.photos[index].getThumbnail())),
-                fit: BoxFit.cover)),
-      ),
-    ));
-  }
-
-  Widget makeGalleryContent() {
-    if (widget.pet.photos.isEmpty) {
-      return const Center(child: Text("Este pet ainda não possui fotos"));
-    } else {
-      return Consumer<PetsModel>(builder: (context, petsModel, child) {
-        return GridView(
-            gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                maxCrossAxisExtent: 200,
-                childAspectRatio: 3 / 2,
-                crossAxisSpacing: 20,
-                mainAxisSpacing: 20),
-            children:
-            List<Widget>.generate(widget.pet.photos.length, (int index) {
-              return buildPhotoTile(index);
-            }));
-      });
-    }
-  }
-
-  Widget makeGallery() {
-    return Expanded(child: Container(
-      // padding: const EdgeInsets.all(24.0),
-      color: Theme.of(context).colorScheme.background,
-      child: makeGalleryContent()
-    ));
-  }
-
-  Widget makeOptionsRow() {
-    return const Text("Options Row");
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-        appBar: AppBar(
-          backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-          title: Text(widget.pet.name),
-        ),
-        body: Align(
-            alignment: Alignment.topLeft,
-            child: Column(
-              children: [
-                makeDescription(),
-                makeGallery(),
-                makeOptionsRow()
-              ],
-            )),
-        floatingActionButton: getDeleteButton());
   }
 }

@@ -10,6 +10,11 @@ import 'package:tuple/tuple.dart';
 
 import 'model.dart';
 
+Future<Directory> getPetDir(Pet pet) async {
+  Directory basepath = await getApplicationDocumentsDirectory();
+  return Directory(join(basepath.path, pet.localId.toString().padLeft(6, '0')));
+}
+
 void savePet(Pet pet) async {
   var prefs = await SharedPreferences.getInstance();
 
@@ -23,8 +28,9 @@ void savePet(Pet pet) async {
   print("Local id: $localId");
 
   // Make pet directory
-  Directory basepath = await getApplicationDocumentsDirectory();
-  Directory directory = Directory(join(basepath.path, pet.localId.toString().padLeft(6, '0')));
+  Directory directory = await getPetDir(pet);
+  // Directory basepath = await getApplicationDocumentsDirectory();
+  // Directory directory = Directory(join(basepath.path, pet.localId.toString().padLeft(6, '0')));
   await directory.create();
   print(directory.path);
 
@@ -37,8 +43,9 @@ void savePet(Pet pet) async {
 
 void updatePet(Pet pet) async {
   // Make pet directory
-  Directory basepath = await getApplicationDocumentsDirectory();
-  Directory directory = Directory(join(basepath.path, pet.localId.toString().padLeft(6, '0')));
+  Directory directory = await getPetDir(pet);
+  // Directory basepath = await getApplicationDocumentsDirectory();
+  // Directory directory = Directory(join(basepath.path, pet.localId.toString().padLeft(6, '0')));
   print(directory.path);
 
   // Populate json
@@ -47,14 +54,13 @@ void updatePet(Pet pet) async {
 }
 
 void deletePet(Pet pet) async {
-  Directory basepath = await getApplicationDocumentsDirectory();
-  print(basepath);
-  Directory directory = Directory(join(basepath.path, pet.localId.toString().padLeft(6, '0')));
+  Directory directory = await getPetDir(pet);
   await directory.delete(recursive: true);
 }
 
 Future<List<Pet>> loadPets() async {
   Directory directory = await getApplicationDocumentsDirectory();
+  print(directory);
   List<Directory> petDirs = List<Directory>.empty(growable: true);
 
   for (FileSystemEntity e in directory.listSync()) {
@@ -63,7 +69,7 @@ Future<List<Pet>> loadPets() async {
     }
   }
 
-  List<Pet> pets = List<Pet>.empty();
+  List<Pet> pets = List<Pet>.empty(growable: true);
   // A Valid pet is a folder having a info.json file
   for (Directory dir in petDirs) {
     File f = File('${dir.path}/info.json');
@@ -71,14 +77,14 @@ Future<List<Pet>> loadPets() async {
     if (exists) {
       String contents = await f.readAsString();
       Pet pet = Pet.fromJson(json.decode(contents));
-      pet.photos = List<Photo>.empty();
-
-      // Load images
-      for (FileSystemEntity e in dir.listSync()) {
-        if (e is File && e.path.endsWith(".png")) {
-          pet.photos.add(Photo(path: e.path));
-        }
-      }
+      // pet.photos = List<Photo>.empty();
+      //
+      // // Load images
+      // for (FileSystemEntity e in dir.listSync()) {
+      //   if (e is File && (e.path.endsWith(".png") || e.path.endsWith(".jpg"))) {
+      //     pet.photos.add(Photo(path: e.path));
+      //   }
+      // }
 
       pets.add(pet);
     }

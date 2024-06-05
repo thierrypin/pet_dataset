@@ -1,12 +1,13 @@
 
 import 'dart:collection';
+import 'dart:ffi';
 
 import 'package:flutter/material.dart';
 import 'package:pet_dataset/model/persistence.dart';
 
 enum Species { none, cat, dog }
 extension SpeciesExtension on Species {
-  String get name {
+  String get prettyName {
     switch (this) {
       case Species.cat:
         return 'Gato';
@@ -31,7 +32,7 @@ extension SpeciesExtension on Species {
 
 enum Sex { none, masc, fem }
 extension SexExtension on Sex {
-  String get name {
+  String get prettyName {
     switch (this) {
       case Sex.masc:
         return 'Macho';
@@ -87,7 +88,7 @@ class Photo {
   Photo({this.uploaded=false, required this.path});
 
   Photo.fromJson(Map<String, dynamic> json) :
-        uploaded = json['edited'], path = json['path'];
+        uploaded = json['uploaded'], path = json['path'];
 
   String getThumbnail() {
     return path + suffix;
@@ -121,9 +122,10 @@ class Pet {
     sex = Sex.values.byName(json['sex']);
 
     // Set photos
-    photos = json['photos'].map((Map<String, dynamic> e) {
-      return Photo.fromJson(e);
-    });
+    for (var jsonPhoto in json['photos']) {
+      photos.add(Photo.fromJson(jsonPhoto));
+    }
+    // photos = json['photos'].map((Map<String, dynamic> e) => Photo.fromJson(e));
     
     if (json.containsKey('breed')) {
       breed = Breed.fromJson(json['breed']);
@@ -165,7 +167,7 @@ String getPetEmoji(Species petType) {
   if (petType == Species.cat) {
     return "🐱";
   } else if (petType == Species.dog) {
-    return "🐕";
+    return "🐶";
   } else {
     return "👽";
   }
@@ -179,20 +181,30 @@ class PetsModel extends ChangeNotifier {
   UnmodifiableListView<Pet> get items => UnmodifiableListView(pets);
 
   void initPets(List<Pet> pets) {
+    this.pets.clear();
     this.pets.addAll(pets);
     notifyListeners();
   }
 
   void add(Pet pet) {
     pets.add(pet);
-    notifyListeners();
     savePet(pet);
+    notifyListeners();
+  }
+
+  void update(Pet pet, Pet newPet) {
+    pet.name = newPet.name;
+    pet.species = newPet.species;
+    pet.sex = newPet.sex;
+    pet.breed = newPet.breed;
+    updatePet(pet);
+    notifyListeners();
   }
 
   void remove(Pet pet) {
     pets.remove(pet);
-    notifyListeners();
     deletePet(pet);
+    notifyListeners();
   }
 
 }

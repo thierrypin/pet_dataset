@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'package:pet_dataset/model/model.dart';
-import 'package:pet_dataset/pages/pet_pages.dart';
+import 'package:pet_dataset/pages/view_pet_pages.dart';
+
+import 'new_pet_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key, required this.title});
@@ -33,21 +35,14 @@ class _HomePageState extends State<HomePage> {
           child: Column(
           children: [
             const Spacer(),
-            const Text("Image here..."),
+            const Text("Sem imagens"),
             const Spacer(),
             Row(
               children: [
                 Text(pet.name),
                 const Spacer(),
                 pet.sex.icon,
-                const Spacer(),
-                IconButton(
-                  icon: const Icon(Icons.delete),
-                  color: Colors.red,
-                  onPressed: () {
-                    Provider.of<PetsModel>(context, listen: false).remove(pet);
-                  },
-                )
+                Text(getPetEmoji(pet.species)),
             ],
           ),
         ],
@@ -63,9 +58,7 @@ class _HomePageState extends State<HomePage> {
               childAspectRatio: 3 / 2,
               crossAxisSpacing: 20,
               mainAxisSpacing: 20),
-          children: List<Widget>.generate(petsModel.pets.length, (int index) {
-            return _petToCard(petsModel.pets[index]);
-          }));
+          children: petsModel.pets.map((pet) => _petToCard(pet)).toList());
     });
   }
 
