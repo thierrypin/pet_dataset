@@ -122,6 +122,7 @@ void addPhoto(Pet pet, dynamic f) {
 
   res.then((value) {
     pet.photos.add(Photo(path: value));
+    updatePet(pet);
   });
 }
 
@@ -132,7 +133,8 @@ void deletePhoto(Pet pet, int idx) {
   file = File(pet.photos[idx].getThumbnail());
   file.delete(recursive: false);
 
-  pet.photos.remove(idx);
+  pet.photos.removeAt(idx);
+  updatePet(pet);
 }
 
 // Returns a Tuple3 with: encoded image, width, height
@@ -147,7 +149,6 @@ Tuple3<List<int>, num, num> getPhoto(dynamic f) {
   }
 
   pimg.Image? image = pimg.decodeImage(file.readAsBytesSync());
-
   return Tuple3<List<int>, num, num>(pimg.encodePng(image!), image.width, image.height);
 }
 
@@ -169,4 +170,3 @@ Future<String> getPetPath(Pet pet) async {
 
   return join(directory.path, pet.localId.toString().padLeft(6, '0'));
 }
-

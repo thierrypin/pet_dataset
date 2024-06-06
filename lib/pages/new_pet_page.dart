@@ -4,6 +4,8 @@ import 'package:pet_dataset/model/model.dart';
 import 'package:pet_dataset/pages/view_pet_pages.dart';
 import 'package:provider/provider.dart';
 
+import '../control/pets_control.dart';
+
 
 // ********************************************************
 // New Pet
@@ -171,14 +173,14 @@ class _NewPetPageState extends State<NewPetPage> {
             newPet.breed = Breed(breedController.text);
 
             if (isNew) {
-              Provider.of<PetsModel>(context, listen: false).add(newPet);
+              Provider.of<PetsController>(context, listen: false).add(newPet);
 
               ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text("Pet salvo com sucesso")));
               Navigator.pop(context);
               Navigator.push(context, MaterialPageRoute(builder: (context) => ViewPetPage(pet: newPet)));
             } else {
-              Provider.of<PetsModel>(context, listen: false).update(widget.pet!, newPet);
+              Provider.of<PetsController>(context, listen: false).update(widget.pet!, newPet);
 
               ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text("Pet salvo com sucesso")));

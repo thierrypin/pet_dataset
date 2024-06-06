@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:pet_dataset/model/model.dart';
 import 'package:pet_dataset/pages/view_pet_pages.dart';
 
+import '../control/pets_control.dart';
 import 'new_pet_page.dart';
 
 class HomePage extends StatefulWidget {
@@ -51,7 +52,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _getPetCards() {
-    return Consumer<PetsModel>(builder: (context, petsModel, child) {
+    return Consumer<PetsController>(builder: (context, petsModel, child) {
       return GridView(
           gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
               maxCrossAxisExtent: 200,

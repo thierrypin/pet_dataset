@@ -87,12 +87,12 @@ class Photo {
 
   Photo({this.uploaded=false, required this.path});
 
-  Photo.fromJson(Map<String, dynamic> json) :
-        uploaded = json['uploaded'], path = json['path'];
-
   String getThumbnail() {
     return path + suffix;
   }
+
+  Photo.fromJson(Map<String, dynamic> json) :
+        uploaded = json['uploaded'], path = json['path'];
 
   Map<String, dynamic> toJson() {
     Map<String, dynamic> out = {
@@ -115,6 +115,14 @@ class Pet {
 
   Pet.empty();
   Pet(this.name, this.species, this.sex, this.breed);
+
+  void addPhoto(Photo photo) {
+    photos.add(photo);
+  }
+
+  void removePhoto(int i) {
+    photos.removeAt(i);
+  }
 
   Pet.fromJson(Map<String, dynamic> json) {
     name = json['name'];
@@ -172,40 +180,3 @@ String getPetEmoji(Species petType) {
     return "👽";
   }
 }
-
-class PetsModel extends ChangeNotifier {
-  // State
-  final List<Pet> pets = [];
-
-  // View
-  UnmodifiableListView<Pet> get items => UnmodifiableListView(pets);
-
-  void initPets(List<Pet> pets) {
-    this.pets.clear();
-    this.pets.addAll(pets);
-    notifyListeners();
-  }
-
-  void add(Pet pet) {
-    pets.add(pet);
-    savePet(pet);
-    notifyListeners();
-  }
-
-  void update(Pet pet, Pet newPet) {
-    pet.name = newPet.name;
-    pet.species = newPet.species;
-    pet.sex = newPet.sex;
-    pet.breed = newPet.breed;
-    updatePet(pet);
-    notifyListeners();
-  }
-
-  void remove(Pet pet) {
-    pets.remove(pet);
-    deletePet(pet);
-    notifyListeners();
-  }
-
-}
-

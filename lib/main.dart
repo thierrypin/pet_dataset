@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pet_dataset/model/persistence.dart';
+import 'package:pet_dataset/control/pets_control.dart';
 import 'package:provider/provider.dart';
 
 import 'package:pet_dataset/model/model.dart';
@@ -7,8 +8,8 @@ import 'package:pet_dataset/pages/home.dart';
 
 void main() {
   runApp(
-    ChangeNotifierProvider<PetsModel>(
-      create: (context) => PetsModel(),
+    ChangeNotifierProvider<PetsController>(
+      create: (context) => PetsController(),
       child: const MyApp(),
     ),
   );
@@ -21,7 +22,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Future<List<Pet>> ret = loadPets();
-    ret.then((pets) => Provider.of<PetsModel>(context, listen: false).initPets(pets));
+    ret.then((pets) => Provider.of<PetsController>(context, listen: false).initPets(pets));
 
     return MaterialApp(
       title: 'Pet Dataset',
@@ -48,4 +49,3 @@ class MyApp extends StatelessWidget {
     );
   }
 }
-
