@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pet_dataset/pages/drawer.dart';
 import 'package:provider/provider.dart';
 
 import 'package:pet_dataset/model/model.dart';
@@ -70,6 +71,7 @@ class _HomePageState extends State<HomePage> {
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text(widget.title),
       ),
+      drawer: const MyDrawer(),
       body: Center(child: _getPetCards()),
       floatingActionButton: FloatingActionButton.extended(
         tooltip: 'Increment',

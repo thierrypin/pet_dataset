@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
+import 'package:pet_dataset/pages/drawer.dart';
 import 'package:pet_dataset/pages/take_picture_page.dart';
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
@@ -12,6 +13,8 @@ import 'package:pet_dataset/model/model.dart';
 import 'package:tuple/tuple.dart';
 import '../control/pets_control.dart';
 import 'new_pet_page.dart';
+
+typedef ImageTuple = Tuple3<List<int>, num, num>;
 
 // ********************************************************
 // View Pet
@@ -132,7 +135,7 @@ class _ViewPetPageState extends State<ViewPetPage> {
         print("apertou");
         await showDialog(
             context: context,
-            builder: (_) => ImageDialog(path: widget.pet.photos[index].path));
+            builder: (_) => ImageDialog(pet: widget.pet, photoIdx: index));
       },
       child: Container(
         decoration: BoxDecoration(
@@ -227,10 +230,12 @@ class _ViewPetPageState extends State<ViewPetPage> {
 
   void takePhoto() async {
     var cameras = await availableCameras();
-    Navigator.push(
+    if (mounted) {
+      Navigator.push(
         context,
         MaterialPageRoute(
             builder: (context) => TakePictureScreen(camera: cameras.first)));
+    }
   }
 
   void pickPhoto() {
@@ -243,8 +248,10 @@ class _ViewPetPageState extends State<ViewPetPage> {
             addPhoto(widget.pet, File(xfile.path));
           });
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
               content: Text("Não foi possível adicionar a imagem")));
+          }
         }
       }
     });
@@ -258,9 +265,7 @@ class _ViewPetPageState extends State<ViewPetPage> {
             color: Colors.red,
             icon: const Icon(Icons.delete_forever),
             tooltip: "Deletar pet",
-            onPressed: () {
-              showDeletePetDialog();
-            },
+            onPressed: showDeletePetDialog,
           ),
         ),
         Expanded(
@@ -280,14 +285,14 @@ class _ViewPetPageState extends State<ViewPetPage> {
           child: IconButton(
             icon: const Icon(Icons.camera),
             tooltip: "Adicionar da câmera",
-            onPressed: () => takePhoto(),
+            onPressed: takePhoto,
           ),
         ),
         Expanded(
           child: IconButton(
               icon: const Icon(Icons.photo_album),
               tooltip: "Adicionar da galeria",
-              onPressed: () => pickPhoto()),
+              onPressed: pickPhoto),
         ),
       ],
     );
@@ -300,6 +305,7 @@ class _ViewPetPageState extends State<ViewPetPage> {
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text(widget.pet.name),
       ),
+      //drawer: const MyDrawer(),
       body: Align(
           alignment: Alignment.topLeft,
           child: Column(
@@ -311,48 +317,59 @@ class _ViewPetPageState extends State<ViewPetPage> {
 }
 
 class ImageDialog extends StatefulWidget {
-  final String path;
+  final Pet pet;
+  final int photoIdx;
 
-  const ImageDialog({super.key, required this.path});
+  const ImageDialog({super.key, required this.pet, required this.photoIdx});
 
   @override
   State<StatefulWidget> createState() => _ImageDialogState();
 }
 
 class _ImageDialogState extends State<ImageDialog> {
-  late final Future<Tuple3<List<int>, num, num>> photo;
+  late final Future<ImageTuple> photo;
   double aspect = 0;
 
-  Future<Tuple3<List<int>, num, num>> loadPhoto() async {
-    var tuple = getPhoto(widget.path);
+  @override
+  void initState() {
+
+    super.initState();
+    photo = loadPhoto();
+  }
+
+  Future<ImageTuple> loadPhoto() async {
+    var tuple = getPhoto(widget.pet.photos[widget.photoIdx].path);
     aspect = tuple.item2.toDouble() / tuple.item3.toDouble();
 
     return tuple;
   }
 
-  @override
-  void initState() {
-    super.initState();
-    photo = loadPhoto();
-  }
-
-  Widget makeImageViewer(tuple) {
+  Widget makeImageViewer(ImageTuple tuple) {
     return Container(
       decoration: BoxDecoration(
           image: DecorationImage(
         image: MemoryImage(Uint8List.fromList(tuple.item1)),
         fit: BoxFit.cover,
       )),
-      child: AspectRatio(
-          aspectRatio: aspect,
-          child: Align(
-            alignment: Alignment.topRight,
-            child: IconButton(
-              icon: const Icon(Icons.cancel),
-              color: Colors.black,
-              onPressed: () => Navigator.pop(context),
-            ),
-          )),
+      child: Align(
+          alignment: Alignment.topRight,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              IconButton(
+                icon: const Icon(Icons.delete_forever),
+                color: Colors.red,
+                onPressed: () => Navigator.pop(context),
+              ),
+              //const Spacer(),
+              IconButton(
+                icon: const Icon(Icons.cancel),
+                color: Colors.black,
+                onPressed: () => Navigator.pop(context),
+              )
+            ],
+          )
+      ),
     );
   }
 
@@ -373,7 +390,7 @@ class _ImageDialogState extends State<ImageDialog> {
 
               // if we got our data
             } else if (snapshot.hasData) {
-              return makeImageViewer(snapshot.data);
+              return makeImageViewer(snapshot.data!);
             }
           }
 

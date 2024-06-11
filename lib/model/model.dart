@@ -1,9 +1,6 @@
 
-import 'dart:collection';
-import 'dart:ffi';
 
 import 'package:flutter/material.dart';
-import 'package:pet_dataset/model/persistence.dart';
 
 enum Species { none, cat, dog }
 extension SpeciesExtension on Species {

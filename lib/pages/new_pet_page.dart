@@ -5,6 +5,7 @@ import 'package:pet_dataset/pages/view_pet_pages.dart';
 import 'package:provider/provider.dart';
 
 import '../control/pets_control.dart';
+import 'drawer.dart';
 
 
 // ********************************************************
@@ -85,6 +86,7 @@ class _NewPetPageState extends State<NewPetPage> {
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: const Text("Novo Pet"),
       ),
+      //drawer: const MyDrawer(),
       body: Form(
           key: _formKey,
           child: Column(
@@ -93,6 +95,7 @@ class _NewPetPageState extends State<NewPetPage> {
               // Name
               TextFormField(
                   controller: nameController,
+                  textCapitalization: TextCapitalization.words,
                   decoration: const InputDecoration(
                       hintText: "O nome do bichinho",
                       labelText: "Nome",
@@ -157,6 +160,7 @@ class _NewPetPageState extends State<NewPetPage> {
               // *************
               // Breed
               TextFormField(
+                textCapitalization: TextCapitalization.words,
                 controller: breedController,
                 decoration: const InputDecoration(
                     labelText: "Raça", icon: Icon(Icons.abc)),
